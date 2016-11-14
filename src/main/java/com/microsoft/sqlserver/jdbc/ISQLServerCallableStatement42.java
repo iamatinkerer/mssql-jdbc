@@ -15,21 +15,21 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 //  IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------------------
- 
 
 package com.microsoft.sqlserver.jdbc;
 
 import java.sql.SQLType;
 
 /**
- * This interface requires all the CallableStatement methods including those are specific to JDBC 4.2
+ * This interface requires all the CallableStatement methods including those are
+ * specific to JDBC 4.2
  *
  */
-public interface ISQLServerCallableStatement42 extends ISQLServerCallableStatement, ISQLServerPreparedStatement42{
+public interface ISQLServerCallableStatement42 extends ISQLServerCallableStatement, ISQLServerPreparedStatement42 {
 
 	public void registerOutParameter(int index, SQLType sqlType) throws SQLServerException;
 
-	public void registerOutParameter (int index, SQLType sqlType, String typeName) throws SQLServerException;
+	public void registerOutParameter(int index, SQLType sqlType, String typeName) throws SQLServerException;
 
 	public void registerOutParameter(int index, SQLType sqlType, int scale) throws SQLServerException;
 
@@ -39,13 +39,15 @@ public interface ISQLServerCallableStatement42 extends ISQLServerCallableStateme
 
 	public void setObject(String sCol, Object obj, SQLType jdbcType, int scale) throws SQLServerException;
 
-	public void setObject(String sCol, Object obj, SQLType jdbcType, int scale, boolean forceEncrypt) throws SQLServerException;
+	public void setObject(String sCol, Object obj, SQLType jdbcType, int scale, boolean forceEncrypt)
+			throws SQLServerException;
 
 	public void registerOutParameter(String parameterName, SQLType sqlType, String typeName) throws SQLServerException;
 
 	public void registerOutParameter(String parameterName, SQLType sqlType, int scale) throws SQLServerException;
 
-	public void registerOutParameter(String parameterName, SQLType sqlType, int precision, int scale) throws SQLServerException;
+	public void registerOutParameter(String parameterName, SQLType sqlType, int precision, int scale)
+			throws SQLServerException;
 
 	public void registerOutParameter(String parameterName, SQLType sqlType) throws SQLServerException;
 }

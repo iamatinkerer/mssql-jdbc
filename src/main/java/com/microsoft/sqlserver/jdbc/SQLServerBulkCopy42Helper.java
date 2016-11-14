@@ -15,8 +15,7 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 //  IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------------------
- 
- 
+
 package com.microsoft.sqlserver.jdbc;
 
 import java.sql.Timestamp;
@@ -33,20 +32,20 @@ import microsoft.sql.DateTimeOffset;
 
 /**
  * 
- * This class is separated from SQLServerBulkCopy class to resolve run-time error of missing Java 8 types
- * when running with Java 7
+ * This class is separated from SQLServerBulkCopy class to resolve run-time
+ * error of missing Java 8 types when running with Java 7
  * 
  */
-class SQLServerBulkCopy42Helper
-{
-	static Object getTemporalObjectFromCSVWithFormatter(String valueStrUntrimmed, int srcJdbcType, int srcColOrdinal, DateTimeFormatter dateTimeFormatter, SQLServerConnection connection, SQLServerBulkCopy sqlServerBC) throws SQLServerException
-	{		
+class SQLServerBulkCopy42Helper {
+	static Object getTemporalObjectFromCSVWithFormatter(String valueStrUntrimmed, int srcJdbcType, int srcColOrdinal,
+			DateTimeFormatter dateTimeFormatter, SQLServerConnection connection, SQLServerBulkCopy sqlServerBC)
+			throws SQLServerException {
 		DriverJDBCVersion.checkSupportsJDBC42();
 
-		try{
+		try {
 			TemporalAccessor ta = dateTimeFormatter.parse(valueStrUntrimmed);
 
-			int taHour, taMin, taSec, taYear, taMonth, taDay, taNano , taOffsetSec;
+			int taHour, taMin, taSec, taYear, taMonth, taDay, taNano, taOffsetSec;
 			taHour = taMin = taSec = taYear = taMonth = taDay = taNano = taOffsetSec = 0;
 			if (ta.isSupported(ChronoField.NANO_OF_SECOND))
 				taNano = ta.get(ChronoField.NANO_OF_SECOND);
@@ -76,12 +75,11 @@ class SQLServerBulkCopy42Helper
 			cal.set(Calendar.YEAR, taYear);
 			int fractionalSecondsLength = Integer.toString(taNano).length();
 			for (int i = 0; i < (9 - fractionalSecondsLength); i++)
-				taNano *= 10;			
+				taNano *= 10;
 			Timestamp ts = new Timestamp(cal.getTimeInMillis());
 			ts.setNanos(taNano);
 
-			switch(srcJdbcType)
-			{
+			switch (srcJdbcType) {
 			case java.sql.Types.TIMESTAMP:
 				return ts;
 			case java.sql.Types.TIME:
@@ -95,14 +93,12 @@ class SQLServerBulkCopy42Helper
 			case microsoft.sql.Types.DATETIMEOFFSET:
 				return DateTimeOffset.valueOf(ts, taOffsetSec / 60);
 			}
-		}
-		catch(DateTimeException | ArithmeticException e)
-		{
+		} catch (DateTimeException | ArithmeticException e) {
 			MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_ParsingError"));
 			Object[] msgArgs = { JDBCType.of(srcJdbcType) };
-			throw new SQLServerException(sqlServerBC, form.format(msgArgs), null, 0, false);	
+			throw new SQLServerException(sqlServerBC, form.format(msgArgs), null, 0, false);
 		}
-		// unreachable code. Need to do to compile from Eclipse. 
+		// unreachable code. Need to do to compile from Eclipse.
 		return valueStrUntrimmed;
 	}
 }

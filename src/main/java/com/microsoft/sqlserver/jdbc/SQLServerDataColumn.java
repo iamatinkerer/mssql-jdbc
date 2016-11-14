@@ -15,38 +15,25 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 //  IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------------------
- 
- 
+
 package com.microsoft.sqlserver.jdbc;
 
-import java.util.*;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.util.Map.Entry;
-
-public final class SQLServerDataColumn
-{
+public final class SQLServerDataColumn {
 	String columnName;
 	int javaSqlType;
 	int precision = 0;
 	int scale = 0;
-	
-	public SQLServerDataColumn(String columnName, int sqlType)
-	{
+
+	public SQLServerDataColumn(String columnName, int sqlType) {
 		this.columnName = columnName;
 		this.javaSqlType = sqlType;
 	}
-		
-	public String getColumnName()
-	{
+
+	public String getColumnName() {
 		return columnName;
 	}
-	
-	public int getColumnType()
-	{
+
+	public int getColumnType() {
 		return javaSqlType;
-	}	
+	}
 }

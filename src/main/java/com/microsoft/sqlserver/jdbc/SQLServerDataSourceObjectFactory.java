@@ -15,62 +15,61 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 //  IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------------------
- 
- 
+
 package com.microsoft.sqlserver.jdbc;
 
+import java.util.Hashtable;
 
-import javax.naming.*;
-import javax.naming.spi.*;
-import java.util.*;
-import java.lang.reflect.*;
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.spi.ObjectFactory;
 
 /**
-* SQLServerDataSourceObjectFactory is an object factory to materialize datasources from JNDI.
-*/
+ * SQLServerDataSourceObjectFactory is an object factory to materialize
+ * datasources from JNDI.
+ */
 
 public final class SQLServerDataSourceObjectFactory implements ObjectFactory {
 
-	// NOTE: Per ObjectFactory spec, the ObjectFactory class requires a public 
+	// NOTE: Per ObjectFactory spec, the ObjectFactory class requires a public
 	// class with public constructor.
-	public SQLServerDataSourceObjectFactory() {}
+	public SQLServerDataSourceObjectFactory() {
+	}
 
-	// getObjectInstance is a factory for rehydrating references to SQLServerDataSource and its child classes.
+	// getObjectInstance is a factory for rehydrating references to
+	// SQLServerDataSource and its child classes.
 	// Caller gets the reference by calling SQLServerDataSource.getReference.
 	// References are used by JNDI to persist and rehydrate objects.
-	public Object getObjectInstance(Object ref, Name name, Context c, Hashtable<?,?> h)  throws SQLServerException 
-	{
+	public Object getObjectInstance(Object ref, Name name, Context c, Hashtable<?, ?> h) throws SQLServerException {
 		// Create a new instance of a DataSource class from the given reference.
-		try 
-		{
+		try {
 			javax.naming.Reference r = (javax.naming.Reference) ref;
 			// First get "class" property from reference.
 			javax.naming.RefAddr ra = r.get("class");
 
 			// Our reference will always have a "class" RefAddr.
-			if (null == ra)	
-                     {
-                        SQLServerException.makeFromDriverError(null, null,
-                            SQLServerException.getErrString("R_invalidDataSourceReference"), null, true);
-                     }
- 
+			if (null == ra) {
+				SQLServerException.makeFromDriverError(null, null,
+						SQLServerException.getErrString("R_invalidDataSourceReference"), null, true);
+			}
+
 			String className = (String) ra.getContent();
 
-			if (null == className) 
-                        SQLServerException.makeFromDriverError(null, null,
-                            SQLServerException.getErrString("R_invalidDataSourceReference"), null, true);
+			if (null == className)
+				SQLServerException.makeFromDriverError(null, null,
+						SQLServerException.getErrString("R_invalidDataSourceReference"), null, true);
 
 			// Check that we have the expected class name inside our reference.
-			if (("com.microsoft.sqlserver.jdbc.SQLServerDataSource").equals(className) ||
-				("com.microsoft.sqlserver.jdbc.SQLServerConnectionPoolDataSource").equals(className) ||
-				("com.microsoft.sqlserver.jdbc.SQLServerXADataSource").equals(className) ) 
-			{
+			if (("com.microsoft.sqlserver.jdbc.SQLServerDataSource").equals(className)
+					|| ("com.microsoft.sqlserver.jdbc.SQLServerConnectionPoolDataSource").equals(className)
+					|| ("com.microsoft.sqlserver.jdbc.SQLServerXADataSource").equals(className)) {
 
 				// Create class instance and initialize using reference.
 				Class<?> dataSourceClass = Class.forName(className);
 				Object dataSourceClassInstance = dataSourceClass.newInstance();
 
-				// If this class we created does not cast to SQLServerDataSource, then caller
+				// If this class we created does not cast to
+				// SQLServerDataSource, then caller
 				// passed in the wrong reference to our factory.
 				SQLServerDataSource ds = (SQLServerDataSource) dataSourceClassInstance;
 				ds.initializeFromReference(r);
@@ -78,28 +77,20 @@ public final class SQLServerDataSourceObjectFactory implements ObjectFactory {
 			}
 			// Class not found, throw invalid reference exception.
 			SQLServerException.makeFromDriverError(null, null,
-                            SQLServerException.getErrString("R_invalidDataSourceReference"), null, true);
-		}
-		catch (ClassNotFoundException e) 
-		{
+					SQLServerException.getErrString("R_invalidDataSourceReference"), null, true);
+		} catch (ClassNotFoundException e) {
 			SQLServerException.makeFromDriverError(null, null,
-                            SQLServerException.getErrString("R_invalidDataSourceReference"), null, true);
-		}
-		catch (InstantiationException e) 
-		{
+					SQLServerException.getErrString("R_invalidDataSourceReference"), null, true);
+		} catch (InstantiationException e) {
 			SQLServerException.makeFromDriverError(null, null,
-                            SQLServerException.getErrString("R_invalidDataSourceReference"), null, true);
-		}
-		catch (IllegalAccessException e) 
-		{
+					SQLServerException.getErrString("R_invalidDataSourceReference"), null, true);
+		} catch (IllegalAccessException e) {
 			SQLServerException.makeFromDriverError(null, null,
-                            SQLServerException.getErrString("R_invalidDataSourceReference"), null, true);
+					SQLServerException.getErrString("R_invalidDataSourceReference"), null, true);
 		}
-        // no chance of getting here but to keep the compiler happy
-        return null;
+		// no chance of getting here but to keep the compiler happy
+		return null;
 
 	}
 
-
 }
-

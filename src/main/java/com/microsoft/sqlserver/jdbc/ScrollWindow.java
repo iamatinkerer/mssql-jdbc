@@ -15,215 +15,213 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 //  IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------------------
- 
 
 package com.microsoft.sqlserver.jdbc;
 
 /**
- * ScrollWindow provides an efficient way to scroll around within a limited number of rows,
- * typically the ResultSet fetch size, by saving and restoring row state, such as starting
- * point in the response and updated/deleted status, on movement within the window.
+ * ScrollWindow provides an efficient way to scroll around within a limited
+ * number of rows, typically the ResultSet fetch size, by saving and restoring
+ * row state, such as starting point in the response and updated/deleted status,
+ * on movement within the window.
  *
- * Without a scroll window, scrolling backward through a result set would be very costly,
- * requiring reindexing the fetch buffer up to row N-1 for each move to the previous row.
+ * Without a scroll window, scrolling backward through a result set would be
+ * very costly, requiring reindexing the fetch buffer up to row N-1 for each
+ * move to the previous row.
  */
-final class ScrollWindow
-{
-    /** Set of marks for the rows in the window */
-    private TDSReaderMark[] rowMark;
+final class ScrollWindow {
+	/** Set of marks for the rows in the window */
+	private TDSReaderMark[] rowMark;
 
-    /** Set of flags indicating which rows have been updated through the ResultSet */
-    private boolean[] updatedRow;
+	/**
+	 * Set of flags indicating which rows have been updated through the
+	 * ResultSet
+	 */
+	private boolean[] updatedRow;
 
-    /** Set of flags indicating which rows have been deleted through the ResultSet */
-    private boolean[] deletedRow;
+	/**
+	 * Set of flags indicating which rows have been deleted through the
+	 * ResultSet
+	 */
+	private boolean[] deletedRow;
 
-    /** Set of enums indicating the types of rows in a ResultSet */
-    private RowType[] rowType;
-    
-    /** Size (in rows) of this scroll window */
-    private int size = 0;
+	/** Set of enums indicating the types of rows in a ResultSet */
+	private RowType[] rowType;
 
-    /** Max number of rows in the window (less than or equal to size) */
-    private int maxRows = 0;
-    final int getMaxRows() { return maxRows; }
+	/** Size (in rows) of this scroll window */
+	private int size = 0;
 
-    /** Current row in the window (1-indexed) */
-    private int currentRow;
-    final int getRow() { return currentRow; }
+	/** Max number of rows in the window (less than or equal to size) */
+	private int maxRows = 0;
 
-    ScrollWindow(int size)
-    {
-        setSize(size);
-        reset();
-    }
+	final int getMaxRows() {
+		return maxRows;
+	}
 
-    private final void setSize(int size)
-    {
-        assert this.size != size;
-        this.size = size;
-        this.maxRows = size;
-        this.rowMark = new TDSReaderMark[size];
-        this.updatedRow = new boolean[size];
-        this.deletedRow = new boolean[size];
-        this.rowType = new RowType[size];
-        for(int i=0;i<size;i++) 
-        {
-        	rowType[i] = RowType.UNKNOWN;
-        }
-    }
+	/** Current row in the window (1-indexed) */
+	private int currentRow;
 
-    final void clear()
-    {
-        for (int i = 0; i < rowMark.length; ++i)
-        {
-            rowMark[i] = null;
-            updatedRow[i] = false;
-            deletedRow[i] = false;
-            rowType[i] = RowType.UNKNOWN;
-        }
+	final int getRow() {
+		return currentRow;
+	}
 
-        assert size > 0;
-        maxRows = size;
-        reset();
-    }
+	ScrollWindow(int size) {
+		setSize(size);
+		reset();
+	}
 
-    final void reset()
-    {
-        currentRow = 0;
-    }
+	private final void setSize(int size) {
+		assert this.size != size;
+		this.size = size;
+		this.maxRows = size;
+		this.rowMark = new TDSReaderMark[size];
+		this.updatedRow = new boolean[size];
+		this.deletedRow = new boolean[size];
+		this.rowType = new RowType[size];
+		for (int i = 0; i < size; i++) {
+			rowType[i] = RowType.UNKNOWN;
+		}
+	}
 
-    final void resize(int newSize)
-    {
-        assert newSize > 0;
-        if (newSize != size)
-            setSize(newSize);
-    }
+	final void clear() {
+		for (int i = 0; i < rowMark.length; ++i) {
+			rowMark[i] = null;
+			updatedRow[i] = false;
+			deletedRow[i] = false;
+			rowType[i] = RowType.UNKNOWN;
+		}
 
-    final String logCursorState()
-    {
-        return " currentRow:" + currentRow + " maxRows:" + maxRows;
-    }
+		assert size > 0;
+		maxRows = size;
+		reset();
+	}
 
-    final boolean next(SQLServerResultSet rs) throws SQLServerException
-    {
-        if(SQLServerResultSet.logger.isLoggable(java.util.logging.Level.FINER))
-            SQLServerResultSet.logger.finer(rs.toString() + logCursorState());
+	final void reset() {
+		currentRow = 0;
+	}
 
-        // Precondition:
-        // Current position should always be on a row in the window or
-        // just before the first row or just after the last row.
-        assert 0 <= currentRow && currentRow <= maxRows + 1;
+	final void resize(int newSize) {
+		assert newSize > 0;
+		if (newSize != size)
+			setSize(newSize);
+	}
 
-        // If the position is already beyond the end of the window,
-        // then it can move no farther forward.
-        if (maxRows + 1 == currentRow)
-            return false;
+	final String logCursorState() {
+		return " currentRow:" + currentRow + " maxRows:" + maxRows;
+	}
 
-        // Otherwise, we are going to attempt to move the current
-        // position to the next row.  First, save off the row
-        // updated/deleted status for the current row so it
-        // can be restored later if we ever move to this row again.
-        if (currentRow >= 1)
-        {
-            updatedRow[currentRow-1] = rs.getUpdatedCurrentRow();
-            deletedRow[currentRow-1] = rs.getDeletedCurrentRow();
-            rowType[currentRow-1] = rs.getCurrentRowType();
-        }
+	final boolean next(SQLServerResultSet rs) throws SQLServerException {
+		if (SQLServerResultSet.logger.isLoggable(java.util.logging.Level.FINER))
+			SQLServerResultSet.logger.finer(rs.toString() + logCursorState());
 
-        // Start on the next row
-        ++currentRow;
+		// Precondition:
+		// Current position should always be on a row in the window or
+		// just before the first row or just after the last row.
+		assert 0 <= currentRow && currentRow <= maxRows + 1;
 
-        // If we were on the last row of the window then make sure
-        // the move past the last row consumes the remainder of that
-        // row from the fetch buffer.  The fetch buffer should be
-        // left pointing beyond the last row of the window, which
-        // is most likely the end of the fetch buffer as well.
-        if (maxRows + 1 == currentRow)
-        {
-            rs.fetchBufferNext();
-            return false;
-        }
+		// If the position is already beyond the end of the window,
+		// then it can move no farther forward.
+		if (maxRows + 1 == currentRow)
+			return false;
 
-        // We weren't on the last row of the window.  If we already
-        // know that there was another row in the fetch buffer,
-        // then restore the response buffer position and updated/deleted
-        // status for the new row.
-        if (null != rowMark[currentRow-1])
-        {
-            rs.fetchBufferReset(rowMark[currentRow-1]);
-            rs.setCurrentRowType(rowType[currentRow - 1]);
-            rs.setUpdatedCurrentRow(updatedRow[currentRow-1]);
-            rs.setDeletedCurrentRow(deletedRow[currentRow-1]);
-            return true;
-        }
+		// Otherwise, we are going to attempt to move the current
+		// position to the next row. First, save off the row
+		// updated/deleted status for the current row so it
+		// can be restored later if we ever move to this row again.
+		if (currentRow >= 1) {
+			updatedRow[currentRow - 1] = rs.getUpdatedCurrentRow();
+			deletedRow[currentRow - 1] = rs.getDeletedCurrentRow();
+			rowType[currentRow - 1] = rs.getCurrentRowType();
+		}
 
-        // We weren't on the last row of the window and we don't
-        // know whether there are additional rows in the fetch
-        // buffer, so try to read another row now.  If we find
-        // one then keep track of its position in the response
-        // buffer.
-        if (rs.fetchBufferNext())
-        {
-            rowMark[currentRow-1] = rs.fetchBufferMark();
-            rowType[currentRow-1] = rs.getCurrentRowType();
+		// Start on the next row
+		++currentRow;
 
-            if(SQLServerResultSet.logger.isLoggable(java.util.logging.Level.FINEST))
-                SQLServerResultSet.logger.finest(rs.toString() + " Set mark " + rowMark[currentRow-1] + " for row " + currentRow + " of type " + rowType[currentRow-1]);
+		// If we were on the last row of the window then make sure
+		// the move past the last row consumes the remainder of that
+		// row from the fetch buffer. The fetch buffer should be
+		// left pointing beyond the last row of the window, which
+		// is most likely the end of the fetch buffer as well.
+		if (maxRows + 1 == currentRow) {
+			rs.fetchBufferNext();
+			return false;
+		}
 
-            return true;
-        }
+		// We weren't on the last row of the window. If we already
+		// know that there was another row in the fetch buffer,
+		// then restore the response buffer position and updated/deleted
+		// status for the new row.
+		if (null != rowMark[currentRow - 1]) {
+			rs.fetchBufferReset(rowMark[currentRow - 1]);
+			rs.setCurrentRowType(rowType[currentRow - 1]);
+			rs.setUpdatedCurrentRow(updatedRow[currentRow - 1]);
+			rs.setDeletedCurrentRow(deletedRow[currentRow - 1]);
+			return true;
+		}
 
-        // We weren't on the last row of the window and we now
-        // know that there are no more rows in the fetch buffer,
-        // so adjust maxRows down accordingly.
-        maxRows = currentRow - 1;
-        return false;
-    }
+		// We weren't on the last row of the window and we don't
+		// know whether there are additional rows in the fetch
+		// buffer, so try to read another row now. If we find
+		// one then keep track of its position in the response
+		// buffer.
+		if (rs.fetchBufferNext()) {
+			rowMark[currentRow - 1] = rs.fetchBufferMark();
+			rowType[currentRow - 1] = rs.getCurrentRowType();
 
-    final void previous(SQLServerResultSet rs) throws SQLServerException
-    {
-        if(SQLServerResultSet.logger.isLoggable(java.util.logging.Level.FINER))
-            SQLServerResultSet.logger.finer(rs.toString() + logCursorState());
+			if (SQLServerResultSet.logger.isLoggable(java.util.logging.Level.FINEST))
+				SQLServerResultSet.logger.finest(rs.toString() + " Set mark " + rowMark[currentRow - 1] + " for row "
+						+ currentRow + " of type " + rowType[currentRow - 1]);
 
-        // Precondition:
-        // Current position should always be on a row in the window or
-        // just before the first row or just after the last row.
-        assert 0 <= currentRow && currentRow <= maxRows + 1;
+			return true;
+		}
 
-        // If the position is already before the start of the window,
-        // then it can move no farther back.
-        if (0 == currentRow)
-            return;
+		// We weren't on the last row of the window and we now
+		// know that there are no more rows in the fetch buffer,
+		// so adjust maxRows down accordingly.
+		maxRows = currentRow - 1;
+		return false;
+	}
 
-        // Otherwise, we are going to attempt to move the current
-        // position to the previous row.  First, save off the row
-        // updated/deleted status for the current row so it
-        // can be restored later if we ever move to this row again.
-        if (currentRow <= maxRows)
-        {
-            assert currentRow >= 1;
-            updatedRow[currentRow-1] = rs.getUpdatedCurrentRow();
-            deletedRow[currentRow-1] = rs.getDeletedCurrentRow();
-            rowType[currentRow-1] = rs.getCurrentRowType();
-        }
+	final void previous(SQLServerResultSet rs) throws SQLServerException {
+		if (SQLServerResultSet.logger.isLoggable(java.util.logging.Level.FINER))
+			SQLServerResultSet.logger.finer(rs.toString() + logCursorState());
 
-        // Start on the previous row
-        --currentRow;
+		// Precondition:
+		// Current position should always be on a row in the window or
+		// just before the first row or just after the last row.
+		assert 0 <= currentRow && currentRow <= maxRows + 1;
 
-        // If we were on the first row of the window before moving,
-        // then we're now before the first row and we're done.
-        if (0 == currentRow)
-            return;
+		// If the position is already before the start of the window,
+		// then it can move no farther back.
+		if (0 == currentRow)
+			return;
 
-        // If we weren't on the first row before moving then we
-        // are now on the previous row.  Restore the saved
-        // position in the response buffer and updated/deleted
-        // state for the now current row.
-        assert null != rowMark[currentRow - 1];
-        rs.fetchBufferReset(rowMark[currentRow - 1]);
-        rs.setCurrentRowType(rowType[currentRow - 1]);
-        rs.setUpdatedCurrentRow(updatedRow[currentRow - 1]);
-        rs.setDeletedCurrentRow(deletedRow[currentRow - 1]);
-    }
+		// Otherwise, we are going to attempt to move the current
+		// position to the previous row. First, save off the row
+		// updated/deleted status for the current row so it
+		// can be restored later if we ever move to this row again.
+		if (currentRow <= maxRows) {
+			assert currentRow >= 1;
+			updatedRow[currentRow - 1] = rs.getUpdatedCurrentRow();
+			deletedRow[currentRow - 1] = rs.getDeletedCurrentRow();
+			rowType[currentRow - 1] = rs.getCurrentRowType();
+		}
+
+		// Start on the previous row
+		--currentRow;
+
+		// If we were on the first row of the window before moving,
+		// then we're now before the first row and we're done.
+		if (0 == currentRow)
+			return;
+
+		// If we weren't on the first row before moving then we
+		// are now on the previous row. Restore the saved
+		// position in the response buffer and updated/deleted
+		// state for the now current row.
+		assert null != rowMark[currentRow - 1];
+		rs.fetchBufferReset(rowMark[currentRow - 1]);
+		rs.setCurrentRowType(rowType[currentRow - 1]);
+		rs.setUpdatedCurrentRow(updatedRow[currentRow - 1]);
+		rs.setDeletedCurrentRow(deletedRow[currentRow - 1]);
+	}
 }

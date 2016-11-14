@@ -15,8 +15,7 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 //  IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------------------
- 
- 
+
 package com.microsoft.sqlserver.jdbc;
 
 import java.io.UnsupportedEncodingException;
@@ -31,6 +30,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.http.impl.client.HttpClientBuilder;
+
 import com.microsoft.azure.keyvault.KeyVaultClient;
 import com.microsoft.azure.keyvault.KeyVaultClientImpl;
 import com.microsoft.azure.keyvault.models.KeyBundle;
@@ -38,19 +38,20 @@ import com.microsoft.azure.keyvault.models.KeyOperationResult;
 import com.microsoft.azure.keyvault.webkey.JsonWebKeySignatureAlgorithm;
 
 /**
- * Provides implementation similar to certificate store provider.
- *  A CEK encrypted with certificate store provider should be decryptable by this provider and vice versa.
+ * Provides implementation similar to certificate store provider. A CEK
+ * encrypted with certificate store provider should be decryptable by this
+ * provider and vice versa.
  * 
- * Envolope Format for the encrypted column encryption key  
- *         version + keyPathLength + ciphertextLength + keyPath + ciphertext +  signature
- * version: A single byte indicating the format version.
- *  keyPathLength: Length of the keyPath.
- *  ciphertextLength: ciphertext length
- *  keyPath: keyPath used to encrypt the column encryption key. This is only used for troubleshooting purposes and is not verified during decryption.
- *  ciphertext: Encrypted column encryption key
- *  signature: Signature of the entire byte array. Signature is validated before decrypting the column encryption key.
+ * Envolope Format for the encrypted column encryption key version +
+ * keyPathLength + ciphertextLength + keyPath + ciphertext + signature version:
+ * A single byte indicating the format version. keyPathLength: Length of the
+ * keyPath. ciphertextLength: ciphertext length keyPath: keyPath used to encrypt
+ * the column encryption key. This is only used for troubleshooting purposes and
+ * is not verified during decryption. ciphertext: Encrypted column encryption
+ * key signature: Signature of the entire byte array. Signature is validated
+ * before decrypting the column encryption key.
  */
-public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerColumnEncryptionKeyStoreProvider{
+public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerColumnEncryptionKeyStoreProvider {
 
 	/**
 	 * Column Encryption Key Store Provider string
@@ -59,7 +60,7 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 
 	private final String azureKeyVaultDomainName = "vault.azure.net";
 
-	private final String rsaEncryptionAlgorithmWithOAEPForAKV="RSA-OAEP";
+	private final String rsaEncryptionAlgorithmWithOAEPForAKV = "RSA-OAEP";
 
 	/**
 	 * Algorithm version
@@ -70,30 +71,30 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 
 	private KeyVaultCredential credential;
 
-	
-	public void setName(String name)
-	{
-		this.name = name; 
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public String getName()
-	{
+	public String getName() {
 		return this.name;
 	}
-	
+
 	/**
-	 * Constructor that takes a callback function to authenticate to AAD. This is used by KeyVaultClient at runtime 
-	 * to authenticate to Azure Key Vault.
+	 * Constructor that takes a callback function to authenticate to AAD. This
+	 * is used by KeyVaultClient at runtime to authenticate to Azure Key Vault.
 	 * 
-	 * @param authenticationCallback - Callback function used for authenticating to AAD.
+	 * @param authenticationCallback
+	 *            - Callback function used for authenticating to AAD.
 	 * @param executorService
-	 * @throws SQLServerException 
+	 * @throws SQLServerException
 	 */
-	public SQLServerColumnEncryptionAzureKeyVaultProvider(SQLServerKeyVaultAuthenticationCallback authenticationCallback, ExecutorService executorService) throws SQLServerException{
-		if(null == authenticationCallback){
-	       	 MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_NullValue"));
-	       	 Object[] msgArgs1 = { "SQLServerKeyVaultAuthenticationCallback" };
-	       	 throw new SQLServerException(form.format(msgArgs1), null);
+	public SQLServerColumnEncryptionAzureKeyVaultProvider(
+			SQLServerKeyVaultAuthenticationCallback authenticationCallback, ExecutorService executorService)
+			throws SQLServerException {
+		if (null == authenticationCallback) {
+			MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_NullValue"));
+			Object[] msgArgs1 = { "SQLServerKeyVaultAuthenticationCallback" };
+			throw new SQLServerException(form.format(msgArgs1), null);
 		}
 		credential = new KeyVaultCredential(authenticationCallback);
 		HttpClientBuilder builder = HttpClientBuilder.create();
@@ -101,12 +102,15 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 	}
 
 	/**
-	 * This function uses the asymmetric key specified by the key path
-	 * and decrypts an encrypted CEK with RSA encryption algorithm.
+	 * This function uses the asymmetric key specified by the key path and
+	 * decrypts an encrypted CEK with RSA encryption algorithm.
 	 * 
-	 * @param masterKeyPath - Complete path of an asymmetric key in AKV
-	 * @param encryptionAlgorithm - Asymmetric Key Encryption Algorithm
-	 * @param encryptedColumnEncryptionKey - Encrypted Column Encryption Key
+	 * @param masterKeyPath
+	 *            - Complete path of an asymmetric key in AKV
+	 * @param encryptionAlgorithm
+	 *            - Asymmetric Key Encryption Algorithm
+	 * @param encryptedColumnEncryptionKey
+	 *            - Encrypted Column Encryption Key
 	 * @return Plain text column encryption key
 	 */
 	@Override
@@ -116,13 +120,11 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 		// Validate the input parameters
 		this.ValidateNonEmptyAKVPath(masterKeyPath);
 
-		if (null == encryptedColumnEncryptionKey)
-		{
+		if (null == encryptedColumnEncryptionKey) {
 			throw new SQLServerException(SQLServerException.getErrString("R_NullEncryptedColumnEncryptionKey"), null);
 		}
 
-		if (0 == encryptedColumnEncryptionKey.length)
-		{
+		if (0 == encryptedColumnEncryptionKey.length) {
 			throw new SQLServerException(SQLServerException.getErrString("R_EmptyEncryptedColumnEncryptionKey"), null);
 		}
 
@@ -133,17 +135,21 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 		int keySizeInBytes = getAKVKeySize(masterKeyPath);
 
 		// Validate and decrypt the EncryptedColumnEncryptionKey
-		// Format is 
-		//           version + keyPathLength + ciphertextLength + keyPath + ciphertext +  signature
+		// Format is
+		// version + keyPathLength + ciphertextLength + keyPath + ciphertext +
+		// signature
 		//
-		// keyPath is present in the encrypted column encryption key for identifying the original source of the asymmetric key pair and 
-		// we will not validate it against the data contained in the CMK metadata (masterKeyPath).
+		// keyPath is present in the encrypted column encryption key for
+		// identifying the original source of the asymmetric key pair and
+		// we will not validate it against the data contained in the CMK
+		// metadata (masterKeyPath).
 
 		// Validate the version byte
-		if (encryptedColumnEncryptionKey[0] != firstVersion[0])
-		{
-			MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_InvalidEcryptionAlgorithmVersion"));
-			Object[] msgArgs = {String.format("%02X ", encryptedColumnEncryptionKey[0]), String.format("%02X ", firstVersion[0])};
+		if (encryptedColumnEncryptionKey[0] != firstVersion[0]) {
+			MessageFormat form = new MessageFormat(
+					SQLServerException.getErrString("R_InvalidEcryptionAlgorithmVersion"));
+			Object[] msgArgs = { String.format("%02X ", encryptedColumnEncryptionKey[0]),
+					String.format("%02X ", firstVersion[0]) };
 			throw new SQLServerException(this, form.format(msgArgs), null, 0, false);
 		}
 
@@ -158,41 +164,40 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 		currentIndex += 2;
 
 		// Skip KeyPath
-		// KeyPath exists only for troubleshooting purposes and doesnt need validation.
+		// KeyPath exists only for troubleshooting purposes and doesnt need
+		// validation.
 		currentIndex += keyPathLength;
 
 		// validate the ciphertext length
-		if (cipherTextLength != keySizeInBytes)
-		{
+		if (cipherTextLength != keySizeInBytes) {
 			MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_AKVKeyLengthError"));
-			Object[] msgArgs = {cipherTextLength, keySizeInBytes, masterKeyPath};
+			Object[] msgArgs = { cipherTextLength, keySizeInBytes, masterKeyPath };
 			throw new SQLServerException(this, form.format(msgArgs), null, 0, false);
 		}
 
 		// Validate the signature length
 		int signatureLength = encryptedColumnEncryptionKey.length - currentIndex - cipherTextLength;
 
-		if (signatureLength != keySizeInBytes)
-		{            
+		if (signatureLength != keySizeInBytes) {
 			MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_AKVSignatureLengthError"));
-			Object[] msgArgs = {signatureLength, keySizeInBytes, masterKeyPath};
+			Object[] msgArgs = { signatureLength, keySizeInBytes, masterKeyPath };
 			throw new SQLServerException(this, form.format(msgArgs), null, 0, false);
 		}
 
 		// Get ciphertext
 		byte[] cipherText = new byte[cipherTextLength];
-		System.arraycopy(encryptedColumnEncryptionKey,currentIndex,cipherText,0,cipherTextLength);
+		System.arraycopy(encryptedColumnEncryptionKey, currentIndex, cipherText, 0, cipherTextLength);
 		currentIndex += cipherTextLength;
 
 		// Get signature
 		byte[] signature = new byte[signatureLength];
-		System.arraycopy(encryptedColumnEncryptionKey,currentIndex,signature,0,signatureLength);
+		System.arraycopy(encryptedColumnEncryptionKey, currentIndex, signature, 0, signatureLength);
 
 		// Compute the hash to validate the signature
 		byte[] hash = new byte[encryptedColumnEncryptionKey.length - signature.length];
 
-		System.arraycopy(encryptedColumnEncryptionKey,0,hash,0,encryptedColumnEncryptionKey.length - signature.length);
-
+		System.arraycopy(encryptedColumnEncryptionKey, 0, hash, 0,
+				encryptedColumnEncryptionKey.length - signature.length);
 
 		MessageDigest md = null;
 		try {
@@ -203,16 +208,14 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 		md.update(hash);
 		byte dataToVerify[] = md.digest();
 
-		if (null == dataToVerify)
-		{
+		if (null == dataToVerify) {
 			throw new SQLServerException(SQLServerException.getErrString("R_HashNull"), null);
 		}
 
 		// Validate the signature
-		if (!AzureKeyVaultVerifySignature(dataToVerify, signature, masterKeyPath))
-		{
+		if (!AzureKeyVaultVerifySignature(dataToVerify, signature, masterKeyPath)) {
 			MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_CEKSignatureNotMatchCMK"));
-			Object[] msgArgs = {masterKeyPath};
+			Object[] msgArgs = { masterKeyPath };
 			throw new SQLServerException(this, form.format(msgArgs), null, 0, false);
 		}
 
@@ -222,17 +225,11 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 		return decryptedCEK;
 	}
 
-	private short convertTwoBytesToShort(byte[] input, int index) throws SQLServerException
-	{
+	private short convertTwoBytesToShort(byte[] input, int index) throws SQLServerException {
 
 		short shortVal = -1;
-		if (index + 1 >= input.length)
-		{
-			throw new SQLServerException(
-					null,
-					SQLServerException.getErrString("R_ByteToShortConversion"),
-					null,
-					0,
+		if (index + 1 >= input.length) {
+			throw new SQLServerException(null, SQLServerException.getErrString("R_ByteToShortConversion"), null, 0,
 					false);
 		}
 		ByteBuffer byteBuffer = ByteBuffer.allocate(2);
@@ -245,12 +242,15 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 	}
 
 	/**
-	 * This function uses the asymmetric key specified by the key path
-	 * and encrypts CEK with RSA encryption algorithm.
+	 * This function uses the asymmetric key specified by the key path and
+	 * encrypts CEK with RSA encryption algorithm.
 	 * 
-	 * @param masterKeyPath - Complete path of an asymmetric key in AKV
-	 * @param encryptionAlgorithm - Asymmetric Key Encryption Algorithm
-	 * @param columnEncryptionKey - Plain text column encryption key
+	 * @param masterKeyPath
+	 *            - Complete path of an asymmetric key in AKV
+	 * @param encryptionAlgorithm
+	 *            - Asymmetric Key Encryption Algorithm
+	 * @param columnEncryptionKey
+	 *            - Plain text column encryption key
 	 * @return Encrypted column encryption key
 	 */
 	@Override
@@ -260,13 +260,11 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 		// Validate the input parameters
 		this.ValidateNonEmptyAKVPath(masterKeyPath);
 
-		if (null == columnEncryptionKey)
-		{
+		if (null == columnEncryptionKey) {
 			throw new SQLServerException(SQLServerException.getErrString("R_NullColumnEncryptionKey"), null);
 		}
 
-		if (0 == columnEncryptionKey.length)
-		{
+		if (0 == columnEncryptionKey.length) {
 			throw new SQLServerException(SQLServerException.getErrString("R_EmptyCEK"), null);
 		}
 
@@ -277,55 +275,57 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 		int keySizeInBytes = getAKVKeySize(masterKeyPath);
 
 		// Construct the encryptedColumnEncryptionKey
-		// Format is 
-		//          version + keyPathLength + ciphertextLength + ciphertext + keyPath + signature
+		// Format is
+		// version + keyPathLength + ciphertextLength + ciphertext + keyPath +
+		// signature
 		//
 		// We currently only support one version
 		byte[] version = new byte[] { firstVersion[0] };
 
-		// Get the Unicode encoded bytes of cultureinvariant lower case masterKeyPath
+		// Get the Unicode encoded bytes of cultureinvariant lower case
+		// masterKeyPath
 		byte[] masterKeyPathBytes = null;
 		try {
 			masterKeyPathBytes = masterKeyPath.toLowerCase().getBytes("UTF-16LE");
 		} catch (UnsupportedEncodingException e) {
-			MessageFormat form = new MessageFormat(
-					SQLServerException.getErrString("R_unsupportedEncoding"));
+			MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_unsupportedEncoding"));
 			Object[] msgArgs = { "UTF-16LE" };
 			throw new SQLServerException(this, form.format(msgArgs), null, 0, false);
 		}
 
 		byte[] keyPathLength = new byte[2];
-		keyPathLength[0] = (byte)(((short)masterKeyPathBytes.length) & 0xff);
-		keyPathLength[1] = (byte)(((short)masterKeyPathBytes.length) >> 8 & 0xff);
+		keyPathLength[0] = (byte) (((short) masterKeyPathBytes.length) & 0xff);
+		keyPathLength[1] = (byte) (((short) masterKeyPathBytes.length) >> 8 & 0xff);
 
 		// Encrypt the plain text
 		byte[] cipherText = this.AzureKeyVaultWrap(masterKeyPath, encryptionAlgorithm, columnEncryptionKey);
 
 		byte[] cipherTextLength = new byte[2];
-		cipherTextLength[0] = (byte)(((short)cipherText.length) & 0xff);
-		cipherTextLength[1] = (byte)(((short)cipherText.length) >> 8 & 0xff);
+		cipherTextLength[0] = (byte) (((short) cipherText.length) & 0xff);
+		cipherTextLength[1] = (byte) (((short) cipherText.length) >> 8 & 0xff);
 
-		if (cipherText.length != keySizeInBytes)
-		{
+		if (cipherText.length != keySizeInBytes) {
 			throw new SQLServerException(SQLServerException.getErrString("R_CipherTextLengthNotMatchRSASize"), null);
 		}
 
 		// Compute hash
-		// SHA-2-256(version + keyPathLength + ciphertextLength + keyPath + ciphertext) 
-		byte [] dataToHash=new byte[version.length + keyPathLength.length + cipherTextLength.length + masterKeyPathBytes.length + cipherText.length];
-		int destinationPosition=version.length;
+		// SHA-2-256(version + keyPathLength + ciphertextLength + keyPath +
+		// ciphertext)
+		byte[] dataToHash = new byte[version.length + keyPathLength.length + cipherTextLength.length
+				+ masterKeyPathBytes.length + cipherText.length];
+		int destinationPosition = version.length;
 		System.arraycopy(version, 0, dataToHash, 0, version.length);
 
 		System.arraycopy(keyPathLength, 0, dataToHash, destinationPosition, keyPathLength.length);
-		destinationPosition+=keyPathLength.length;
+		destinationPosition += keyPathLength.length;
 
 		System.arraycopy(cipherTextLength, 0, dataToHash, destinationPosition, cipherTextLength.length);
-		destinationPosition+=cipherTextLength.length;
+		destinationPosition += cipherTextLength.length;
 
 		System.arraycopy(masterKeyPathBytes, 0, dataToHash, destinationPosition, masterKeyPathBytes.length);
-		destinationPosition+=masterKeyPathBytes.length;
+		destinationPosition += masterKeyPathBytes.length;
 
-		System.arraycopy(cipherText, 0, dataToHash, destinationPosition, cipherText.length); 
+		System.arraycopy(cipherText, 0, dataToHash, destinationPosition, cipherText.length);
 
 		MessageDigest md = null;
 		try {
@@ -340,19 +340,19 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 		byte[] signedHash = null;
 		signedHash = AzureKeyVaultSignHashedData(dataToSign, masterKeyPath);
 
-		if (signedHash.length != keySizeInBytes)
-		{
+		if (signedHash.length != keySizeInBytes) {
 			throw new SQLServerException(SQLServerException.getErrString("R_SignedHashLengthError"), null);
 		}
 
-		if (!this.AzureKeyVaultVerifySignature(dataToSign, signedHash, masterKeyPath))
-		{
+		if (!this.AzureKeyVaultVerifySignature(dataToSign, signedHash, masterKeyPath)) {
 			throw new SQLServerException(SQLServerException.getErrString("R_InvalidSignatureComputed"), null);
 		}
 
 		// Construct the encrypted column encryption key
-		// EncryptedColumnEncryptionKey = version + keyPathLength + ciphertextLength + keyPath + ciphertext +  signature
-		int encryptedColumnEncryptionKeyLength = version.length + cipherTextLength.length + keyPathLength.length + cipherText.length + masterKeyPathBytes.length + signedHash.length;
+		// EncryptedColumnEncryptionKey = version + keyPathLength +
+		// ciphertextLength + keyPath + ciphertext + signature
+		int encryptedColumnEncryptionKeyLength = version.length + cipherTextLength.length + keyPathLength.length
+				+ cipherText.length + masterKeyPathBytes.length + signedHash.length;
 		byte[] encryptedColumnEncryptionKey = new byte[encryptedColumnEncryptionKeyLength];
 
 		// Copy version byte
@@ -383,76 +383,66 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 	}
 
 	/**
-	 * This function validates that the encryption algorithm is RSA_OAEP and if it is not,
-	 * then throws an exception
-	 * @param encryptionAlgorithm - Asymmetric key encryptio algorithm
+	 * This function validates that the encryption algorithm is RSA_OAEP and if
+	 * it is not, then throws an exception
+	 * 
+	 * @param encryptionAlgorithm
+	 *            - Asymmetric key encryptio algorithm
 	 * @return The encryption algorithm that is going to be used.
 	 * @throws SQLServerException
 	 */
-	private String validateEncryptionAlgorithm(String encryptionAlgorithm) throws SQLServerException
-	{
+	private String validateEncryptionAlgorithm(String encryptionAlgorithm) throws SQLServerException {
 
-		if (null == encryptionAlgorithm)
-		{
-			throw new SQLServerException(
-					null,
-					SQLServerException.getErrString("R_NullKeyEncryptionAlgorithm"),
-					null,
-					0,
+		if (null == encryptionAlgorithm) {
+			throw new SQLServerException(null, SQLServerException.getErrString("R_NullKeyEncryptionAlgorithm"), null, 0,
 					false);
 		}
 
-		// Transform to standard format (dash instead of underscore) to support both "RSA_OAEP" and "RSA-OAEP"
-		if (encryptionAlgorithm.equalsIgnoreCase("RSA_OAEP"))
-		{
+		// Transform to standard format (dash instead of underscore) to support
+		// both "RSA_OAEP" and "RSA-OAEP"
+		if (encryptionAlgorithm.equalsIgnoreCase("RSA_OAEP")) {
 			encryptionAlgorithm = "RSA-OAEP";
 		}
 
-		if (!rsaEncryptionAlgorithmWithOAEPForAKV.equalsIgnoreCase(encryptionAlgorithm.trim()))
-		{
-			MessageFormat form = new MessageFormat(
-					SQLServerException.getErrString("R_InvalidKeyEncryptionAlgorithm"));
+		if (!rsaEncryptionAlgorithmWithOAEPForAKV.equalsIgnoreCase(encryptionAlgorithm.trim())) {
+			MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_InvalidKeyEncryptionAlgorithm"));
 			Object[] msgArgs = { encryptionAlgorithm, rsaEncryptionAlgorithmWithOAEPForAKV };
 			throw new SQLServerException(this, form.format(msgArgs), null, 0, false);
 		}
-
 
 		return encryptionAlgorithm;
 	}
 
 	/**
-	 * Checks if the Azure Key Vault key path is Empty or Null (and raises exception if they are).
+	 * Checks if the Azure Key Vault key path is Empty or Null (and raises
+	 * exception if they are).
 	 * 
 	 * @param masterKeyPath
 	 * @throws SQLServerException
 	 */
-	private void ValidateNonEmptyAKVPath(String masterKeyPath) throws SQLServerException
-	{
+	private void ValidateNonEmptyAKVPath(String masterKeyPath) throws SQLServerException {
 		// throw appropriate error if masterKeyPath is null or empty
-		if (null == masterKeyPath || masterKeyPath.trim().isEmpty())
-		{
+		if (null == masterKeyPath || masterKeyPath.trim().isEmpty()) {
 			MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_AKVPathNull"));
-			Object[] msgArgs = {masterKeyPath};
-			throw new SQLServerException(null , form.format(msgArgs) , null, 0 , false);    
-		}
-		else
-		{
+			Object[] msgArgs = { masterKeyPath };
+			throw new SQLServerException(null, form.format(msgArgs), null, 0, false);
+		} else {
 			URI parsedUri = null;
 			try {
 				parsedUri = new URI(masterKeyPath);
 			} catch (URISyntaxException e) {
 				MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_AKVURLInvalid"));
-				Object[] msgArgs = {masterKeyPath};
-				throw new SQLServerException(null , form.format(msgArgs) , null, 0 , false);    
+				Object[] msgArgs = { masterKeyPath };
+				throw new SQLServerException(null, form.format(msgArgs), null, 0, false);
 			}
 
 			// A valid URI.
 			// Check if it is pointing to AKV.
-			if(!parsedUri.getHost().toLowerCase().endsWith(azureKeyVaultDomainName)){
+			if (!parsedUri.getHost().toLowerCase().endsWith(azureKeyVaultDomainName)) {
 				// Return an error indicating that the AKV url is invalid.
 				MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_AKVMasterKeyPathInvalid"));
-				Object[] msgArgs = {masterKeyPath};
-				throw new SQLServerException(null , form.format(msgArgs) , null, 0 , false);   
+				Object[] msgArgs = { masterKeyPath };
+				throw new SQLServerException(null, form.format(msgArgs), null, 0, false);
 			}
 		}
 	}
@@ -460,16 +450,19 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 	/**
 	 * Encrypt the text using specified Azure Key Vault key.
 	 * 
-	 * @param masterKeyPath - Azure Key Vault key url.
-	 * @param encryptionAlgorithm - Encryption Algorithm.
-	 * @param columnEncryptionKey - Plain text Column Encryption Key.
-	 * @return Returns an encrypted blob or throws an exception if there are any errors.
+	 * @param masterKeyPath
+	 *            - Azure Key Vault key url.
+	 * @param encryptionAlgorithm
+	 *            - Encryption Algorithm.
+	 * @param columnEncryptionKey
+	 *            - Plain text Column Encryption Key.
+	 * @return Returns an encrypted blob or throws an exception if there are any
+	 *         errors.
 	 * @throws SQLServerException
 	 */
-	private byte[] AzureKeyVaultWrap(String masterKeyPath, String encryptionAlgorithm, byte[] columnEncryptionKey) throws SQLServerException
-	{
-		if (null == columnEncryptionKey)
-		{
+	private byte[] AzureKeyVaultWrap(String masterKeyPath, String encryptionAlgorithm, byte[] columnEncryptionKey)
+			throws SQLServerException {
+		if (null == columnEncryptionKey) {
 			throw new SQLServerException(SQLServerException.getErrString("R_CEKNull"), null);
 		}
 
@@ -485,27 +478,30 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 	/**
 	 * Encrypt the text using specified Azure Key Vault key.
 	 * 
-	 * @param masterKeyPath - Azure Key Vault key url.
-	 * @param encryptionAlgorithm - Encrypted Column Encryption Key.
-	 * @param encryptedColumnEncryptionKey - Encrypted Column Encryption Key.
-	 * @return Returns the decrypted plaintext Column Encryption Key or throws an exception if there are any errors.
+	 * @param masterKeyPath
+	 *            - Azure Key Vault key url.
+	 * @param encryptionAlgorithm
+	 *            - Encrypted Column Encryption Key.
+	 * @param encryptedColumnEncryptionKey
+	 *            - Encrypted Column Encryption Key.
+	 * @return Returns the decrypted plaintext Column Encryption Key or throws
+	 *         an exception if there are any errors.
 	 * @throws SQLServerException
 	 */
-	private byte[] AzureKeyVaultUnWrap(String masterKeyPath, String encryptionAlgorithm, byte[] encryptedColumnEncryptionKey) throws SQLServerException
-	{
-		if (null == encryptedColumnEncryptionKey)
-		{
+	private byte[] AzureKeyVaultUnWrap(String masterKeyPath, String encryptionAlgorithm,
+			byte[] encryptedColumnEncryptionKey) throws SQLServerException {
+		if (null == encryptedColumnEncryptionKey) {
 			throw new SQLServerException(SQLServerException.getErrString("R_EncryptedCEKNull"), null);
 		}
 
-		if (0 == encryptedColumnEncryptionKey.length)
-		{
+		if (0 == encryptedColumnEncryptionKey.length) {
 			throw new SQLServerException(SQLServerException.getErrString("R_EmptyEncryptedCEK"), null);
 		}
 
 		KeyOperationResult unwrappedKey;
 		try {
-			unwrappedKey = keyVaultClient.unwrapKeyAsync(masterKeyPath, encryptionAlgorithm, encryptedColumnEncryptionKey).get();
+			unwrappedKey = keyVaultClient
+					.unwrapKeyAsync(masterKeyPath, encryptionAlgorithm, encryptedColumnEncryptionKey).get();
 		} catch (InterruptedException | ExecutionException e) {
 			throw new SQLServerException(SQLServerException.getErrString("R_DecryptCEKError"), null);
 		}
@@ -513,16 +509,18 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 	}
 
 	/**
-	 * Generates signature based on RSA PKCS#v1.5 scheme using a specified Azure Key Vault Key URL. 
+	 * Generates signature based on RSA PKCS#v1.5 scheme using a specified Azure
+	 * Key Vault Key URL.
 	 * 
-	 * @param dataToSign - Text to sign.
-	 * @param masterKeyPath - Azure Key Vault key url.
+	 * @param dataToSign
+	 *            - Text to sign.
+	 * @param masterKeyPath
+	 *            - Azure Key Vault key url.
 	 * @return Signature
 	 * @throws SQLServerException
 	 */
-	private byte[] AzureKeyVaultSignHashedData(byte[] dataToSign, String masterKeyPath) throws SQLServerException
-	{
-		assert((null != dataToSign) && (0 != dataToSign.length));
+	private byte[] AzureKeyVaultSignHashedData(byte[] dataToSign, String masterKeyPath) throws SQLServerException {
+		assert ((null != dataToSign) && (0 != dataToSign.length));
 
 		KeyOperationResult signedData = null;
 		try {
@@ -538,18 +536,20 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 	 * 
 	 * @param dataToVerify
 	 * @param signature
-	 * @param masterKeyPath - Azure Key Vault key url.
+	 * @param masterKeyPath
+	 *            - Azure Key Vault key url.
 	 * @return true if signature is valid, false if it is not valid
 	 * @throws SQLServerException
 	 */
-	private boolean AzureKeyVaultVerifySignature(byte[] dataToVerify, byte[] signature, String masterKeyPath) throws SQLServerException
-	{
-		assert((null != dataToVerify) && (0 != dataToVerify.length));
-		assert((null != signature) && (0 != signature.length));
+	private boolean AzureKeyVaultVerifySignature(byte[] dataToVerify, byte[] signature, String masterKeyPath)
+			throws SQLServerException {
+		assert ((null != dataToVerify) && (0 != dataToVerify.length));
+		assert ((null != signature) && (0 != signature.length));
 
 		boolean valid = false;
 		try {
-			valid = keyVaultClient.verifyAsync(masterKeyPath, JsonWebKeySignatureAlgorithm.RS256, dataToVerify, signature).get();
+			valid = keyVaultClient
+					.verifyAsync(masterKeyPath, JsonWebKeySignatureAlgorithm.RS256, dataToVerify, signature).get();
 		} catch (InterruptedException | ExecutionException e) {
 			throw new SQLServerException(SQLServerException.getErrString("R_VerifySignature"), null);
 		}
@@ -560,12 +560,12 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 	/**
 	 * Gets the public Key size in bytes
 	 * 
-	 * @param masterKeyPath - Azure Key Vault Key path
+	 * @param masterKeyPath
+	 *            - Azure Key Vault Key path
 	 * @return Key size in bytes
 	 * @throws SQLServerException
 	 */
-	private int getAKVKeySize(String masterKeyPath) throws SQLServerException
-	{
+	private int getAKVKeySize(String masterKeyPath) throws SQLServerException {
 
 		KeyBundle retrievedKey = null;
 		try {
@@ -574,12 +574,11 @@ public class SQLServerColumnEncryptionAzureKeyVaultProvider extends SQLServerCol
 			throw new SQLServerException(SQLServerException.getErrString("R_GetAKVKeySize"), null);
 		}
 
-		if (!retrievedKey.getKey().getKty().equalsIgnoreCase("RSA") &&
-				!retrievedKey.getKey().getKty().equalsIgnoreCase("RSA-HSM"))
-		{
+		if (!retrievedKey.getKey().getKty().equalsIgnoreCase("RSA")
+				&& !retrievedKey.getKey().getKty().equalsIgnoreCase("RSA-HSM")) {
 			MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_NonRSAKey"));
-			Object[] msgArgs = {retrievedKey.getKey().getKty()};
-			throw new SQLServerException(null , form.format(msgArgs) , null, 0 , false);   
+			Object[] msgArgs = { retrievedKey.getKey().getKty() };
+			throw new SQLServerException(null, form.format(msgArgs), null, 0, false);
 		}
 
 		return retrievedKey.getKey().getN().length;

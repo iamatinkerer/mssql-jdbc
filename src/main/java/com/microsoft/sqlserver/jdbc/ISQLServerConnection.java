@@ -15,22 +15,23 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 //  IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------------------
- 
 
 package com.microsoft.sqlserver.jdbc;
-import java.util.UUID;
+
 import java.sql.SQLException;
+import java.util.UUID;
 
 /**
-*
-* ALL THE non JDBC public methods of SQLServerConnection in should be defined here. 
-*/
+ *
+ * ALL THE non JDBC public methods of SQLServerConnection in should be defined
+ * here.
+ */
 
-public interface ISQLServerConnection extends java.sql.Connection
-{
-    // Transaction types.
-	// TRANSACTION_SNAPSHOT corresponds to -> SET TRANSACTION ISOLATION LEVEL SNAPSHOT
+public interface ISQLServerConnection extends java.sql.Connection {
+	// Transaction types.
+	// TRANSACTION_SNAPSHOT corresponds to -> SET TRANSACTION ISOLATION LEVEL
+	// SNAPSHOT
 	public final static int TRANSACTION_SNAPSHOT = 0x1000;
+
 	public UUID getClientConnectionId() throws SQLException;
 }
-

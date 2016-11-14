@@ -15,14 +15,13 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 //  IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------------------
- 
- 
+
 package com.microsoft.sqlserver.jdbc;
 
 import java.text.MessageFormat;
 
 public class SQLServerMetaData {
-	
+
 	String columnName = null;
 	int javaSqlType;
 	int precision = 0;
@@ -31,110 +30,82 @@ public class SQLServerMetaData {
 	boolean isUniqueKey = false;
 	SQLServerSortOrder sortOrder = SQLServerSortOrder.Unspecified;
 	int sortOrdinal;
-	
+
 	static final int defaultSortOrdinal = -1;
-	
-	public SQLServerMetaData(
-			String columnName, 
-			int sqlType)
-	{
+
+	public SQLServerMetaData(String columnName, int sqlType) {
 		this.columnName = columnName;
 		this.javaSqlType = sqlType;
-	}	
-	
-	public SQLServerMetaData(
-			String columnName, 
-			int sqlType, 
-			int precision, 
-			int scale)
-	{
+	}
+
+	public SQLServerMetaData(String columnName, int sqlType, int precision, int scale) {
 		this.columnName = columnName;
 		this.javaSqlType = sqlType;
 		this.precision = precision;
-		this.scale = scale; 
-	}	
-		
-	public SQLServerMetaData(
-			String columnName, 
-			int sqlType, 
-			int precision, 
-			int scale, 
-			boolean useServerDefault, 
-			boolean isUniqueKey, 
-			SQLServerSortOrder sortOrder,
-			int sortOrdinal) throws SQLServerException
-	{
+		this.scale = scale;
+	}
+
+	public SQLServerMetaData(String columnName, int sqlType, int precision, int scale, boolean useServerDefault,
+			boolean isUniqueKey, SQLServerSortOrder sortOrder, int sortOrdinal) throws SQLServerException {
 		this.columnName = columnName;
 		this.javaSqlType = sqlType;
 		this.precision = precision;
-		this.scale = scale; 
-		this.useServerDefault = useServerDefault; 
-		this.isUniqueKey = isUniqueKey; 
-		this.sortOrder = sortOrder; 
-		this.sortOrdinal = sortOrdinal; 
+		this.scale = scale;
+		this.useServerDefault = useServerDefault;
+		this.isUniqueKey = isUniqueKey;
+		this.sortOrder = sortOrder;
+		this.sortOrdinal = sortOrdinal;
 		validateSortOrder();
-	}	
-	
-	public SQLServerMetaData(SQLServerMetaData sqlServerMetaData)
-	{
+	}
+
+	public SQLServerMetaData(SQLServerMetaData sqlServerMetaData) {
 		this.columnName = sqlServerMetaData.columnName;
 		this.javaSqlType = sqlServerMetaData.javaSqlType;
 		this.precision = sqlServerMetaData.precision;
-		this.scale = sqlServerMetaData.scale; 
-		this.useServerDefault = sqlServerMetaData.useServerDefault; 
-		this.isUniqueKey = sqlServerMetaData.isUniqueKey; 
-		this.sortOrder = sqlServerMetaData.sortOrder; 
-		this.sortOrdinal = sqlServerMetaData.sortOrdinal; 
-	}		
-	
-	public String getColumName()
-	{
+		this.scale = sqlServerMetaData.scale;
+		this.useServerDefault = sqlServerMetaData.useServerDefault;
+		this.isUniqueKey = sqlServerMetaData.isUniqueKey;
+		this.sortOrder = sqlServerMetaData.sortOrder;
+		this.sortOrdinal = sqlServerMetaData.sortOrdinal;
+	}
+
+	public String getColumName() {
 		return columnName;
 	}
-	
-	public int getSqlType()
-	{
+
+	public int getSqlType() {
 		return javaSqlType;
 	}
-	
-	public int getPrecision()
-	{
+
+	public int getPrecision() {
 		return precision;
 	}
-	
-	public int getScale()
-	{
+
+	public int getScale() {
 		return scale;
 	}
-	
-	public boolean useServerDefault()
-	{
+
+	public boolean useServerDefault() {
 		return useServerDefault;
 	}
 
-	public boolean isUniqueKey()
-	{
+	public boolean isUniqueKey() {
 		return isUniqueKey;
 	}
-	
-	public SQLServerSortOrder getSortOrder()
-	{
+
+	public SQLServerSortOrder getSortOrder() {
 		return sortOrder;
 	}
-	
-	public int getSortOrdinal()
-	{
+
+	public int getSortOrdinal() {
 		return sortOrdinal;
 	}
 
-	void validateSortOrder() throws SQLServerException
-	{
+	void validateSortOrder() throws SQLServerException {
 		// should specify both sort order and ordinal, or neither
-		if ( (SQLServerSortOrder.Unspecified == sortOrder) != ( defaultSortOrdinal == sortOrdinal)) 
-        {
-            MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_TVPMissingSortOrderOrOrdinal"));
-	        throw new SQLServerException(form.format(new Object[] {sortOrder , sortOrdinal}), null, 0, null);
-        }
+		if ((SQLServerSortOrder.Unspecified == sortOrder) != (defaultSortOrdinal == sortOrdinal)) {
+			MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_TVPMissingSortOrderOrOrdinal"));
+			throw new SQLServerException(form.format(new Object[] { sortOrder, sortOrdinal }), null, 0, null);
+		}
 	}
 }
-

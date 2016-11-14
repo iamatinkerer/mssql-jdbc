@@ -15,368 +15,339 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 //  IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------------------
- 
- 
-package com.microsoft.sqlserver.jdbc;
-import java.sql.*;
 
+package com.microsoft.sqlserver.jdbc;
+
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 
 /**
-* A ResultSetMetaData object can be used to obtain the meta data (types
-* and type properties) of the columns in a ResultSet.
-*
-* The API javadoc for JDBC API methods that this class implements are not repeated here. Please
-* see Sun's JDBC API interfaces javadoc for those details.
-*/
+ * A ResultSetMetaData object can be used to obtain the meta data (types and
+ * type properties) of the columns in a ResultSet.
+ *
+ * The API javadoc for JDBC API methods that this class implements are not
+ * repeated here. Please see Sun's JDBC API interfaces javadoc for those
+ * details.
+ */
 
-public final class SQLServerResultSetMetaData implements java.sql.ResultSetMetaData
-{
-    private SQLServerConnection con;
-    private final SQLServerResultSet rs;
-    public int nBeforeExecuteCols;
-    static final private java.util.logging.Logger logger =
-        java.util.logging.Logger.getLogger("com.microsoft.sqlserver.jdbc.internals.SQLServerResultSetMetaData");
+public final class SQLServerResultSetMetaData implements java.sql.ResultSetMetaData {
+	private SQLServerConnection con;
+	private final SQLServerResultSet rs;
+	public int nBeforeExecuteCols;
+	static final private java.util.logging.Logger logger = java.util.logging.Logger
+			.getLogger("com.microsoft.sqlserver.jdbc.internals.SQLServerResultSetMetaData");
 
-    static private int baseID = 0;	// Unique id generator for each  instance (used for logging).
-    final private String traceID;
-    // Returns unique id for each instance.
-    private synchronized static int nextInstanceID()
-    {
-        baseID++;
-        return baseID;
-    }
-    final public String toString()
-    {
-        return traceID;
-    }
+	static private int baseID = 0; // Unique id generator for each instance
+									// (used for logging).
+	final private String traceID;
 
+	// Returns unique id for each instance.
+	private synchronized static int nextInstanceID() {
+		baseID++;
+		return baseID;
+	}
 
-   /**
-    * Create a new meta data object for the result set.
-    * @param con the connection
-    * @param rs the parent result set
-    */
-   /*L0*/ SQLServerResultSetMetaData(SQLServerConnection con, SQLServerResultSet rs) 
-    {
-        traceID = " SQLServerResultSetMetaData:"  + nextInstanceID();
-        this.con = con;
-        this.rs =rs;
-        assert rs !=null;
-        if(logger.isLoggable(java.util.logging.Level.FINE))
-        {
-            logger.fine(toString() + " created by (" + rs.toString() + ")");
-        }
-    }
-    private void checkClosed() throws SQLServerException 
-    {
-        rs.checkClosed();
-    }
+	final public String toString() {
+		return traceID;
+	}
 
-   
+	/**
+	 * Create a new meta data object for the result set.
+	 * 
+	 * @param con
+	 *            the connection
+	 * @param rs
+	 *            the parent result set
+	 */
+	/* L0 */ SQLServerResultSetMetaData(SQLServerConnection con, SQLServerResultSet rs) {
+		traceID = " SQLServerResultSetMetaData:" + nextInstanceID();
+		this.con = con;
+		this.rs = rs;
+		assert rs != null;
+		if (logger.isLoggable(java.util.logging.Level.FINE)) {
+			logger.fine(toString() + " created by (" + rs.toString() + ")");
+		}
+	}
 
-   /* ------------------ JDBC API Methods --------------------- */
+	private void checkClosed() throws SQLServerException {
+		rs.checkClosed();
+	}
 
-    public boolean isWrapperFor(Class<?> iface) throws SQLException
-    {
-        DriverJDBCVersion.checkSupportsJDBC4();
-        // This class cannot be unwrapped
-        return false;
-    }
+	/* ------------------ JDBC API Methods --------------------- */
 
-    public <T> T unwrap(Class<T> iface) throws SQLException
-    {
-        DriverJDBCVersion.checkSupportsJDBC4();
-        throw new SQLFeatureNotSupportedException(SQLServerException.getErrString("R_notSupported"));
-    }
+	public boolean isWrapperFor(Class<?> iface) throws SQLException {
+		DriverJDBCVersion.checkSupportsJDBC4();
+		// This class cannot be unwrapped
+		return false;
+	}
 
-    public String getCatalogName(int column) throws SQLServerException
-    {
-        checkClosed();
-        return rs.getColumn(column).getTableName().getDatabaseName();
-    }
+	public <T> T unwrap(Class<T> iface) throws SQLException {
+		DriverJDBCVersion.checkSupportsJDBC4();
+		throw new SQLFeatureNotSupportedException(SQLServerException.getErrString("R_notSupported"));
+	}
 
-   /*L0*/ public int getColumnCount() throws SQLServerException {
-    checkClosed();
-      if (rs==null)
-        return 0;
-      return rs.getColumnCount();
-   }
+	public String getCatalogName(int column) throws SQLServerException {
+		checkClosed();
+		return rs.getColumn(column).getTableName().getDatabaseName();
+	}
 
-    public int getColumnDisplaySize(int column) throws SQLServerException
-    {
-        checkClosed();
-        
-        CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        if(null != cryptoMetadata){
-        	return cryptoMetadata.getBaseTypeInfo().getDisplaySize();
-        }
-        
-        return rs.getColumn(column).getTypeInfo().getDisplaySize();
-    }
+	/* L0 */ public int getColumnCount() throws SQLServerException {
+		checkClosed();
+		if (rs == null)
+			return 0;
+		return rs.getColumnCount();
+	}
 
-    public String getColumnLabel(int column) throws SQLServerException
-    {
-        checkClosed();
-        return rs.getColumn(column).getColumnName();
-    }
+	public int getColumnDisplaySize(int column) throws SQLServerException {
+		checkClosed();
 
-    public String getColumnName(int column) throws SQLServerException
-    {
-        checkClosed();
-        return rs.getColumn(column).getColumnName();
-    }
+		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
+		if (null != cryptoMetadata) {
+			return cryptoMetadata.getBaseTypeInfo().getDisplaySize();
+		}
 
-    public int getColumnType(int column) throws SQLServerException
-    {
-        checkClosed();
+		return rs.getColumn(column).getTypeInfo().getDisplaySize();
+	}
+
+	public String getColumnLabel(int column) throws SQLServerException {
+		checkClosed();
+		return rs.getColumn(column).getColumnName();
+	}
+
+	public String getColumnName(int column) throws SQLServerException {
+		checkClosed();
+		return rs.getColumn(column).getColumnName();
+	}
+
+	public int getColumnType(int column) throws SQLServerException {
+		checkClosed();
 		// under Katmai map the max types to non max to be inline with DBMD.
 		TypeInfo typeInfo = rs.getColumn(column).getTypeInfo();
 
 		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        if(null != cryptoMetadata){
-        	typeInfo = cryptoMetadata.getBaseTypeInfo();
-        }
+		if (null != cryptoMetadata) {
+			typeInfo = cryptoMetadata.getBaseTypeInfo();
+		}
 
 		JDBCType jdbcType = typeInfo.getSSType().getJDBCType();
 		int r = jdbcType.asJavaSqlType();
-		if (con.isKatmaiOrLater())
-		{	
-			SSType 	sqlType =	typeInfo.getSSType();
-			
-			switch (sqlType)
-			{
-				case VARCHARMAX:
-					r = SSType.VARCHAR.getJDBCType().asJavaSqlType();
-					break;
-				case NVARCHARMAX:
-					r =  SSType.NVARCHAR.getJDBCType().asJavaSqlType();
-					break;	
-				case VARBINARYMAX:
-					r =  SSType.VARBINARY.getJDBCType().asJavaSqlType();
-					break;
-				case DATETIME:
-				case SMALLDATETIME:
-					r =  SSType.DATETIME2.getJDBCType().asJavaSqlType();
-					break;
-				case MONEY:
-				case SMALLMONEY:
-					r =  SSType.DECIMAL.getJDBCType().asJavaSqlType();
-					break;
-				case GUID:
-					r = SSType.CHAR.getJDBCType().asJavaSqlType();
-					break;
-				default:
-					// Do nothing
+		if (con.isKatmaiOrLater()) {
+			SSType sqlType = typeInfo.getSSType();
+
+			switch (sqlType) {
+			case VARCHARMAX:
+				r = SSType.VARCHAR.getJDBCType().asJavaSqlType();
+				break;
+			case NVARCHARMAX:
+				r = SSType.NVARCHAR.getJDBCType().asJavaSqlType();
+				break;
+			case VARBINARYMAX:
+				r = SSType.VARBINARY.getJDBCType().asJavaSqlType();
+				break;
+			case DATETIME:
+			case SMALLDATETIME:
+				r = SSType.DATETIME2.getJDBCType().asJavaSqlType();
+				break;
+			case MONEY:
+			case SMALLMONEY:
+				r = SSType.DECIMAL.getJDBCType().asJavaSqlType();
+				break;
+			case GUID:
+				r = SSType.CHAR.getJDBCType().asJavaSqlType();
+				break;
+			default:
+				// Do nothing
 				break;
 			}
 		}
 		return r;
-    }
+	}
 
-    public String getColumnTypeName(int column) throws SQLServerException
-    { 
-        checkClosed();
-        
-        CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        if(null != cryptoMetadata){
-        	return cryptoMetadata.getBaseTypeInfo().getSSTypeName();
-        }
-        
-        return rs.getColumn(column).getTypeInfo().getSSTypeName();
-    }
+	public String getColumnTypeName(int column) throws SQLServerException {
+		checkClosed();
 
-    public int getPrecision(int column) throws SQLServerException
-    {
-        checkClosed();
-        
-        CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        if(null != cryptoMetadata){
-        	return cryptoMetadata.getBaseTypeInfo().getPrecision();
-        }
-        
-        return rs.getColumn(column).getTypeInfo().getPrecision();
-    }
+		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
+		if (null != cryptoMetadata) {
+			return cryptoMetadata.getBaseTypeInfo().getSSTypeName();
+		}
 
-    public int getScale(int column) throws SQLServerException
-    {
-        checkClosed();
-        
-        CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        if(null != cryptoMetadata){
-        	return cryptoMetadata.getBaseTypeInfo().getScale();
-        }
-        
-        return rs.getColumn(column).getTypeInfo().getScale();
-    }
+		return rs.getColumn(column).getTypeInfo().getSSTypeName();
+	}
 
-    public String getSchemaName(int column) throws SQLServerException
-    {
-        checkClosed();
-        return rs.getColumn(column).getTableName().getSchemaName();
-    }
+	public int getPrecision(int column) throws SQLServerException {
+		checkClosed();
 
-    public String getTableName(int column) throws SQLServerException
-    {
-        checkClosed();
-        return rs.getColumn(column).getTableName().getObjectName();
-    }
+		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
+		if (null != cryptoMetadata) {
+			return cryptoMetadata.getBaseTypeInfo().getPrecision();
+		}
 
-    public boolean isAutoIncrement(int column) throws SQLServerException
-    {
-        checkClosed();
-        
-        CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        if(null != cryptoMetadata){
-        	return cryptoMetadata.getBaseTypeInfo().isIdentity();
-        }
-        
-        return rs.getColumn(column).getTypeInfo().isIdentity();
-    }
+		return rs.getColumn(column).getTypeInfo().getPrecision();
+	}
 
-    public boolean isCaseSensitive(int column) throws SQLServerException
-    {
-        checkClosed();
-        
-        CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        if(null != cryptoMetadata){
-        	return cryptoMetadata.getBaseTypeInfo().isCaseSensitive();
-        }
-        
-        return rs.getColumn(column).getTypeInfo().isCaseSensitive();
-    }
+	public int getScale(int column) throws SQLServerException {
+		checkClosed();
 
-    public boolean isCurrency(int column) throws SQLServerException
-    {
-        checkClosed();
-        SSType ssType = rs.getColumn(column).getTypeInfo().getSSType();
+		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
+		if (null != cryptoMetadata) {
+			return cryptoMetadata.getBaseTypeInfo().getScale();
+		}
 
-        CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        if(null != cryptoMetadata){
-        	ssType = cryptoMetadata.getBaseTypeInfo().getSSType();
-        }
+		return rs.getColumn(column).getTypeInfo().getScale();
+	}
 
-        return SSType.MONEY == ssType ||
-               SSType.SMALLMONEY == ssType;
-    }
+	public String getSchemaName(int column) throws SQLServerException {
+		checkClosed();
+		return rs.getColumn(column).getTableName().getSchemaName();
+	}
 
-    public boolean isDefinitelyWritable(int column) throws SQLServerException
-    {
-        checkClosed();
-        
-        CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        if(null != cryptoMetadata){
-        	return TypeInfo.UPDATABLE_READ_WRITE == cryptoMetadata.getBaseTypeInfo().getUpdatability();
-        }
-        
-        return TypeInfo.UPDATABLE_READ_WRITE == rs.getColumn(column).getTypeInfo().getUpdatability();
-    }
+	public String getTableName(int column) throws SQLServerException {
+		checkClosed();
+		return rs.getColumn(column).getTableName().getObjectName();
+	}
 
-    public int isNullable(int column) throws SQLServerException
-    {
-        checkClosed();
-        
-        CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        if(null != cryptoMetadata){
-        	return cryptoMetadata.getBaseTypeInfo().isNullable() ? columnNullable : columnNoNulls;
-        }
-        
-        return rs.getColumn(column).getTypeInfo().isNullable() ? columnNullable : columnNoNulls;
-    }
+	public boolean isAutoIncrement(int column) throws SQLServerException {
+		checkClosed();
 
-    public boolean isReadOnly(int column) throws SQLServerException
-    {
-        checkClosed();
-        
-        CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        if(null != cryptoMetadata){
-        	return TypeInfo.UPDATABLE_READ_ONLY ==cryptoMetadata.getBaseTypeInfo().getUpdatability();
-        }
-        
-        return TypeInfo.UPDATABLE_READ_ONLY == rs.getColumn(column).getTypeInfo().getUpdatability();
-    }
+		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
+		if (null != cryptoMetadata) {
+			return cryptoMetadata.getBaseTypeInfo().isIdentity();
+		}
 
-    public boolean isSearchable(int column) throws SQLServerException
-    {
-        checkClosed();
-        
-        SSType ssType = null;
-        CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        
-        if(null != cryptoMetadata){
-        	ssType = cryptoMetadata.getBaseTypeInfo().getSSType();
-        }
-        else{
-        	ssType = rs.getColumn(column).getTypeInfo().getSSType();
-        }
-        
-        switch (ssType)
-        {
-            case IMAGE:
-            case TEXT:
-            case NTEXT:
-            case UDT:
-            case XML:
-                return false;
+		return rs.getColumn(column).getTypeInfo().isIdentity();
+	}
 
-            default:
-                return true;
-        }
-    }
+	public boolean isCaseSensitive(int column) throws SQLServerException {
+		checkClosed();
 
-    public boolean isSigned(int column) throws SQLServerException
-    {
-        checkClosed();
-        
-        CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        if(null != cryptoMetadata){
-        	return cryptoMetadata.getBaseTypeInfo().getSSType().getJDBCType().isSigned();
-        }
+		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
+		if (null != cryptoMetadata) {
+			return cryptoMetadata.getBaseTypeInfo().isCaseSensitive();
+		}
 
-        return rs.getColumn(column).getTypeInfo().getSSType().getJDBCType().isSigned();
-    }
+		return rs.getColumn(column).getTypeInfo().isCaseSensitive();
+	}
 
-    /**
-     * Returns true if the column is a SQLServer SparseColumnSet 
-     * @param column The column number
-     * @throws SQLServerException
-     */
-    public boolean isSparseColumnSet(int column) throws SQLServerException
-    {
-        checkClosed();
-        
-        CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        if(null != cryptoMetadata){
-        	return cryptoMetadata.getBaseTypeInfo().isSparseColumnSet();
-        }
-        
-        return rs.getColumn(column).getTypeInfo().isSparseColumnSet();
-    }
+	public boolean isCurrency(int column) throws SQLServerException {
+		checkClosed();
+		SSType ssType = rs.getColumn(column).getTypeInfo().getSSType();
 
-    public boolean isWritable(int column) throws SQLServerException
-    {
-        checkClosed();
-        
-        int updatability = -1;
-        CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        if(null != cryptoMetadata){
-        	updatability = cryptoMetadata.getBaseTypeInfo().getUpdatability();
-        }
-        else{
-        	updatability = rs.getColumn(column).getTypeInfo().getUpdatability();
-        }
-        return TypeInfo.UPDATABLE_READ_WRITE == updatability ||
-               TypeInfo.UPDATABLE_UNKNOWN == updatability;
-    }
+		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
+		if (null != cryptoMetadata) {
+			ssType = cryptoMetadata.getBaseTypeInfo().getSSType();
+		}
 
-    public String getColumnClassName(int column) throws SQLServerException
-    {
-        checkClosed();
-        
-        CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
-        if(null != cryptoMetadata){
-        	return cryptoMetadata.getBaseTypeInfo().getSSType().getJDBCType().className();
-        }
-        
-        return rs.getColumn(column).getTypeInfo().getSSType().getJDBCType().className();
-    }
+		return SSType.MONEY == ssType || SSType.SMALLMONEY == ssType;
+	}
+
+	public boolean isDefinitelyWritable(int column) throws SQLServerException {
+		checkClosed();
+
+		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
+		if (null != cryptoMetadata) {
+			return TypeInfo.UPDATABLE_READ_WRITE == cryptoMetadata.getBaseTypeInfo().getUpdatability();
+		}
+
+		return TypeInfo.UPDATABLE_READ_WRITE == rs.getColumn(column).getTypeInfo().getUpdatability();
+	}
+
+	public int isNullable(int column) throws SQLServerException {
+		checkClosed();
+
+		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
+		if (null != cryptoMetadata) {
+			return cryptoMetadata.getBaseTypeInfo().isNullable() ? columnNullable : columnNoNulls;
+		}
+
+		return rs.getColumn(column).getTypeInfo().isNullable() ? columnNullable : columnNoNulls;
+	}
+
+	public boolean isReadOnly(int column) throws SQLServerException {
+		checkClosed();
+
+		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
+		if (null != cryptoMetadata) {
+			return TypeInfo.UPDATABLE_READ_ONLY == cryptoMetadata.getBaseTypeInfo().getUpdatability();
+		}
+
+		return TypeInfo.UPDATABLE_READ_ONLY == rs.getColumn(column).getTypeInfo().getUpdatability();
+	}
+
+	public boolean isSearchable(int column) throws SQLServerException {
+		checkClosed();
+
+		SSType ssType = null;
+		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
+
+		if (null != cryptoMetadata) {
+			ssType = cryptoMetadata.getBaseTypeInfo().getSSType();
+		} else {
+			ssType = rs.getColumn(column).getTypeInfo().getSSType();
+		}
+
+		switch (ssType) {
+		case IMAGE:
+		case TEXT:
+		case NTEXT:
+		case UDT:
+		case XML:
+			return false;
+
+		default:
+			return true;
+		}
+	}
+
+	public boolean isSigned(int column) throws SQLServerException {
+		checkClosed();
+
+		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
+		if (null != cryptoMetadata) {
+			return cryptoMetadata.getBaseTypeInfo().getSSType().getJDBCType().isSigned();
+		}
+
+		return rs.getColumn(column).getTypeInfo().getSSType().getJDBCType().isSigned();
+	}
+
+	/**
+	 * Returns true if the column is a SQLServer SparseColumnSet
+	 * 
+	 * @param column
+	 *            The column number
+	 * @throws SQLServerException
+	 */
+	public boolean isSparseColumnSet(int column) throws SQLServerException {
+		checkClosed();
+
+		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
+		if (null != cryptoMetadata) {
+			return cryptoMetadata.getBaseTypeInfo().isSparseColumnSet();
+		}
+
+		return rs.getColumn(column).getTypeInfo().isSparseColumnSet();
+	}
+
+	public boolean isWritable(int column) throws SQLServerException {
+		checkClosed();
+
+		int updatability = -1;
+		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
+		if (null != cryptoMetadata) {
+			updatability = cryptoMetadata.getBaseTypeInfo().getUpdatability();
+		} else {
+			updatability = rs.getColumn(column).getTypeInfo().getUpdatability();
+		}
+		return TypeInfo.UPDATABLE_READ_WRITE == updatability || TypeInfo.UPDATABLE_UNKNOWN == updatability;
+	}
+
+	public String getColumnClassName(int column) throws SQLServerException {
+		checkClosed();
+
+		CryptoMetadata cryptoMetadata = rs.getColumn(column).getCryptoMetadata();
+		if (null != cryptoMetadata) {
+			return cryptoMetadata.getBaseTypeInfo().getSSType().getJDBCType().className();
+		}
+
+		return rs.getColumn(column).getTypeInfo().getSSType().getJDBCType().className();
+	}
 }

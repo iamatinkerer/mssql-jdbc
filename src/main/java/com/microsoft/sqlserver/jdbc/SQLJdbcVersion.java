@@ -16,15 +16,14 @@
 //  IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------------------
 
-
 /*
 * generated file do not modify 
-*/ 
-package com.microsoft.sqlserver.jdbc; 
-final class SQLJdbcVersion 
- { 
-static final int major=6;
-static final int minor=1;
-static final int patch=0;
-static final int build=0;
+*/
+package com.microsoft.sqlserver.jdbc;
+
+final class SQLJdbcVersion {
+	static final int major = 6;
+	static final int minor = 1;
+	static final int patch = 0;
+	static final int build = 0;
 }

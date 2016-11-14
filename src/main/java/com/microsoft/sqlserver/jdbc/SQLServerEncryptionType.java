@@ -15,45 +15,40 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 //  IN THE SOFTWARE.
 //---------------------------------------------------------------------------------------------------------------------------------
- 
- 
+
 package com.microsoft.sqlserver.jdbc;
 
 import java.text.MessageFormat;
 
 /**
  * 
- * Encryption types supported 
+ * Encryption types supported
  *
  */
- enum SQLServerEncryptionType {
-	Deterministic((byte) 1),
-	Randomized((byte) 2),
-	PlainText((byte) 0);
+enum SQLServerEncryptionType {
+	Deterministic((byte) 1), Randomized((byte) 2), PlainText((byte) 0);
 
 	byte value;
-	SQLServerEncryptionType(byte val)
-	{
+
+	SQLServerEncryptionType(byte val) {
 		this.value = val;
 	}
 
-	byte getValue()
-	{
+	byte getValue() {
 		return this.value;
 	}
 
-    static SQLServerEncryptionType of(byte val) throws SQLServerException
-    {
-        for (SQLServerEncryptionType type : values())
-            if (val == type.value)
-                return type;
-        
-        // Invalid type.
-        MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_unknownColumnEncryptionType"));
-        Object[] msgArgs = {val};
-        SQLServerException.makeFromDriverError(null, null, form.format(msgArgs), null, true);
-        
-        // Make the compiler happy.
-        return null;
-    }	
+	static SQLServerEncryptionType of(byte val) throws SQLServerException {
+		for (SQLServerEncryptionType type : values())
+			if (val == type.value)
+				return type;
+
+		// Invalid type.
+		MessageFormat form = new MessageFormat(SQLServerException.getErrString("R_unknownColumnEncryptionType"));
+		Object[] msgArgs = { val };
+		SQLServerException.makeFromDriverError(null, null, form.format(msgArgs), null, true);
+
+		// Make the compiler happy.
+		return null;
+	}
 }
